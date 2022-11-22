@@ -115,7 +115,7 @@ $(document).ready(() => {
                                 info = arr[1]["timeSeries"][1]["areas"][0]["tempsMax"][i];
                                 $(".w_after .day_" + c + " .temp_max").text(info + "°");
                             }
-                            $(".area_name").text(window.innerWidth);
+                            $(".area_name").text(window.innerHeight);
                         }
                     });
                 });
