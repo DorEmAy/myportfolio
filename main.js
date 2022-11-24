@@ -1,10 +1,6 @@
-console.log("main.js!!");
-
 const URL = "https://www.jma.go.jp/bosai/forecast/data/forecast/210000.json"; //大垣
 
-$(document).ready(() => {
-    console.log("Ready!!");
-
+$(function () {
     // Axios
     const option = { responseType: "blob" };
     axios
@@ -36,40 +32,42 @@ $(document).ready(() => {
                         let temp_min = arr[0]["timeSeries"][2]["areas"][0]["temps"][0];
                         let temp_max = arr[0]["timeSeries"][2]["areas"][0]["temps"][1];
                         let temp_youbi = youbi(arr[0]["timeSeries"][2]["timeDefines"][1]);
+                        //1つめのズレ
                         if (temp_youbi != now_day) {
-                            //1つめのズレ
                             temp_max = temp_min;
                             temp_min = "";
                         }
                         temp_youbi = youbi(arr[0]["timeSeries"][2]["timeDefines"][0]);
+                        //2つめのズレ
                         if (temp_youbi != now_day) {
-                            //2つめのズレ
                             temp_max = "";
                         }
-                        $(".main_3 .temp_min").text("朝の最低気温  " + temp_min + (temp_min == "" ? "-" : "°"));
-                        $(".main_3 .temp_max").text("昼の最高気温  " + temp_max + (temp_min == "" ? "-" : "°"));
+                        //最低気温を消す
+                        if (temp_min == temp_max && temp_min != "" && temp_min != "") {
+                            temp_min = "";
+                        }
+                        $(".main_3 .temp_min").text("朝の最低気温  " + (temp_min == "" ? "-" : temp_min + "°"));
+                        $(".main_3 .temp_max").text("昼の最高気温  " + (temp_max == "" ? "-" : temp_max + "°"));
 
                         //予報
-                        let i = 0,
-                            j,
-                            c = 0,
-                            info,
-                            t,
-                            at,
-                            idx;
+                        let i = 0;
+                        let c = 0;
                         const y = ["日", "月", "火", "水", "木", "金", "土"];
 
+                        //予報に今日の情報を表示しないようにずらす
                         let afteryoubi = youbi(arr[1]["timeSeries"][0]["timeDefines"][0]);
                         if (afteryoubi == now_day) {
                             i += 1;
                         }
-                        j = i + 5;
-                        for (i = 0; i <= j; i++) {
+                        let j = i + 5;
+
+                        //表示のループ
+                        for (i = i; i <= j; i++) {
                             c++;
                             //曜日
-                            t = arr[1]["timeSeries"][0]["timeDefines"][i];
-                            at = youbi(t);
-                            info = y[at];
+                            let t = arr[1]["timeSeries"][0]["timeDefines"][i];
+                            let at = youbi(t);
+                            let info = y[at];
                             $(".w_after .day_" + c + " .date").text(info + "曜日");
 
                             //降水確率
@@ -95,7 +93,7 @@ $(document).ready(() => {
                             info = arr[1]["timeSeries"][0]["areas"][0]["weatherCodes"][i];
                             $(".w_after .day_" + c + " .w_icon img").attr("src", "./images/" + tr[info]);
 
-                            //最低気温
+                            //気温
                             info = arr[1]["timeSeries"][1]["areas"][0]["tempsMin"][i];
                             if (info == "") {
                                 let tmdate = arr[0]["timeSeries"][2]["timeDefines"];
@@ -117,6 +115,7 @@ $(document).ready(() => {
                             }
                         }
                     });
+                    $("#date").text(month);
                 });
             });
         })
@@ -127,8 +126,8 @@ $(document).ready(() => {
 
     //日時->曜日
     function youbi(arrdate) {
-        arrdate = arrdate.substr(0, 10);
-        arrdate = arrdate.replace(/-/g, "/");
+        arrdate = arrdate.substr(0, 10); //yyyy-mm-ddに直す
+        arrdate = arrdate.replace(/-/g, "/"); //yyyy/mm/ddに直す
         arrdate = new Date(arrdate);
         arrdate = arrdate.getDay();
         return arrdate;
